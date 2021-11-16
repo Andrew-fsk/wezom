@@ -4,6 +4,7 @@
 
 {% block body %}
     <h1>News index</h1>
+    <h1> page - {{ page }}</h1>
 
     <table class="table">
         <thead>
@@ -28,7 +29,6 @@
                 <td>{{ news.postTime ? news.postTime|date('Y-m-d H:i:s') : '' }}</td>
                 <td>
                     <a href="{{ path('news_show', {'id': news.id}) }}">show</a>
-                    <a href="{{ path('news_edit', {'id': news.id}) }}">edit</a>
                 </td>
             </tr>
         {% else %}
@@ -38,6 +38,16 @@
         {% endfor %}
         </tbody>
     </table>
+    {{ dump() }}
+    {% if previous > 0 and page != 1%}
+        <a href="{{ path('news_index', { page: previous }) }}">Previous</a>
+    {% elseif previous == 0 and page != 1 %}
+        <a href="{{ path('news_index') }}">Previous</a>
+    {% endif %}
 
-    <a href="{{ path('news_new') }}">Create new</a>
+    {% if next <= news.count %}
+        <a href="{{ path('news_index', { page: next }) }}">Next</a>
+    {% endif %}
+
+{#    <a href="{{ path('news_new') }}">Create new</a>#}
 {% endblock %}

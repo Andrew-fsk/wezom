@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\News;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
  * @method News|null find($id, $lockMode = null, $lockVersion = null)
@@ -14,9 +15,24 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class NewsRepository extends ServiceEntityRepository
 {
+    public const PAGINATOR_PER_PAGE = 3;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, News::class);
+    }
+
+
+    public function getNewsPaginator(int $offset): Paginator
+    {
+        $query = $this->createQueryBuilder('n')
+            ->andWhere('n.published = 1')
+            ->orderBy('n.post_time', 'DESC')
+            ->setMaxResults(self::PAGINATOR_PER_PAGE)
+            ->setFirstResult($offset)
+            ->getQuery();
+
+        return new Paginator($query);
     }
 
     public function getPublished()

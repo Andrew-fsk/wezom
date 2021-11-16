@@ -10,17 +10,22 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Twig\Environment;
 
-#[Route('/news')]
 class NewsController extends AbstractController
 {
-    #[Route('/', name: 'news_index', methods: ['GET'])]
-    public function index(NewsRepository $newsRepository): Response
+    #[Route('/news/{page<\d+>?1}', name: 'news_index', methods: ['GET'])]
+    public function index(Request $request, Environment $twig, NewsRepository $newsRepository, int $page): Response
     {
-        return $this->render('news/index.html.twig', [
-            'news' => $newsRepository->getPublished(),
-        ]);
-    }
+        $paginator = $newsRepository->getNewsPaginator($page * NewsRepository::PAGINATOR_PER_PAGE - NewsRepository::PAGINATOR_PER_PAGE);
+        return new Response($twig->render('news/index.html.twig', [
+            'news' => $paginator,
+            'page' => $page,
+            'previous' => $page - NewsRepository::PAGINATOR_PER_PAGE,
+            'next' => min(count($paginator), $page + 1),
+        ]));
+     }
+
 
     #[Route('/new', name: 'news_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -42,14 +47,16 @@ class NewsController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'news_show', methods: ['GET'])]
+    #[Route('/news/read/{id}', name: 'news_show', methods: ['GET'])]
     public function show(News $news): Response
     {
+        if(!$news->getPublished())
+            return $this->redirectToRoute('news_index');
         return $this->render('news/show.html.twig', [
             'news' => $news,
         ]);
     }
-
+/*
     #[Route('/{id}/edit', name: 'news_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, News $news, EntityManagerInterface $entityManager): Response
     {
@@ -66,8 +73,8 @@ class NewsController extends AbstractController
             'news' => $news,
             'form' => $form,
         ]);
-    }
-
+    }*/
+/*
     #[Route('/{id}', name: 'news_delete', methods: ['POST'])]
     public function delete(Request $request, News $news, EntityManagerInterface $entityManager): Response
     {
@@ -77,5 +84,5 @@ class NewsController extends AbstractController
         }
 
         return $this->redirectToRoute('news_index', [], Response::HTTP_SEE_OTHER);
-    }
+    }*/
 }
