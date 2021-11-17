@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}News index{% endblock %}
+{% block title %}News{% endblock %}
 
 {% block body %}
     <h1>News index</h1>
@@ -38,14 +38,12 @@
         {% endfor %}
         </tbody>
     </table>
-    {{ dump() }}
     {% if previous > 0 and page != 1%}
         <a href="{{ path('news_index', { page: previous }) }}">Previous</a>
     {% elseif previous == 0 and page != 1 %}
         <a href="{{ path('news_index') }}">Previous</a>
     {% endif %}
-
-    {% if next <= news.count %}
+    {% if page < page_count %}
         <a href="{{ path('news_index', { page: next }) }}">Next</a>
     {% endif %}
 

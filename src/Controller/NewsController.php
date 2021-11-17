@@ -17,12 +17,19 @@ class NewsController extends AbstractController
     #[Route('/news/{page<\d+>?1}', name: 'news_index', methods: ['GET'])]
     public function index(Request $request, Environment $twig, NewsRepository $newsRepository, int $page): Response
     {
-        $paginator = $newsRepository->getNewsPaginator($page * NewsRepository::PAGINATOR_PER_PAGE - NewsRepository::PAGINATOR_PER_PAGE);
+        $offset = $page * NewsRepository::PAGINATOR_PER_PAGE - NewsRepository::PAGINATOR_PER_PAGE;
+        $news = $newsRepository->getNewsPaginator($offset);
+        if($offset > count($news))
+            return $this->redirectToRoute('news_index', [], Response::HTTP_SEE_OTHER);
+
+        $page_count = ceil(count($newsRepository->getPublished()) / NewsRepository::PAGINATOR_PER_PAGE);
+
         return new Response($twig->render('news/index.html.twig', [
-            'news' => $paginator,
+            'news' => $news,
             'page' => $page,
-            'previous' => $page - NewsRepository::PAGINATOR_PER_PAGE,
-            'next' => min(count($paginator), $page + 1),
+            'page_count' => intval($page_count),
+            'previous' => $page - 1,
+            'next' => min(count($news), $page + 1),
         ]));
      }
 
